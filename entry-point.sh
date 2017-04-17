@@ -16,7 +16,7 @@ case $1 in
     /usr/local/zeppelin/bin/zeppelin.sh
     ;;
   all )
-    supervisord -c /supervisor-all.conf
+    supervisord -c /etc/supervisord.conf
     ;;
   * )
     echo "Unknown command $1, starting shell"

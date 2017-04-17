@@ -1,4 +1,4 @@
 #!/bin/bash
-#
 
-export SPARK_SUBMIT_OPTIONS="--driver-memory 4G"
+export ZEPPELIN_MEM="-Xms1024m -Xmx4096m"
+export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx4096m"
