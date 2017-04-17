@@ -8,11 +8,12 @@ RUN apt-get install -y git libblas-dev liblapack-dev gfortran
 RUN pip install --upgrade pip
 RUN pip install jupyter
 RUN pip install numpy scipy matplotlib scikit-learn pandas seaborn jupyter tqdm 
-RUN pip install nose statsmodels
+RUN pip install nose statsmodels xgboost
 
 RUN jupyter notebook --allow-root --generate-config -y
 RUN echo "c.NotebookApp.password = ''" >> ~/.jupyter/jupyter_notebook_config.py
 RUN echo "c.NotebookApp.token = ''" >> ~/.jupyter/jupyter_notebook_config.py
+RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
 
 RUN mkdir /home/user
 WORKDIR /home/user
