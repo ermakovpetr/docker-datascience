@@ -72,16 +72,28 @@ RUN cd /tmp && \
     mkdir -p /usr/local/sbt/ && \
     mv sbt-launch.jar /usr/local/sbt/
 
-COPY entry-point.sh supervisor-all.conf /
-COPY sbt h2o /usr/local/bin/
-COPY zeppelin-env.sh /usr/local/zeppelin/conf/
+# == Sparkling water ==
+RUN cd /tmp && \
+    curl -L http://h2o-release.s3.amazonaws.com/sparkling-water/rel-2.1/3/sparkling-water-2.1.3.zip \
+        > sparkling-water-2.1.3.zip && \
+    unzip sparkling-water-2.1.3.zip && \
+    mv ./sparkling-water-2.1.3 /usr/local/ && \
+    rm sparkling-water-2.1.3.zip && \
+    ln -s /usr/local/sparkling-water-2.1.3 /usr/local/sparkling-water
 
-# Final setup: directories, permissions, ssh login, etc
+COPY entry-point.sh /
+COPY supervisord.conf /etc/
+COPY zeppelin-env.sh /usr/local/zeppelin/conf/
+COPY sbt h2o /usr/local/bin/
+
+# Final setup: directories, permissions, ssh login, symlinks, etc
 RUN mkdir -p /home/user && \
     mkdir -p /var/run/sshd && \
     echo 'root:12345' | chpasswd && \
     sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+    ln -s /usr/local/sparkling-water/assembly/build/libs/sparkling-water-assembly_2.11-2.1.3-all.jar \
+        /usr/local/zeppelin/interpreter/spark/dep/ && \
     chmod a+x /usr/local/bin/h2o && \
     chmod a+x /usr/local/bin/sbt && \
     chmod a+x /entry-point.sh
