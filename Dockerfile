@@ -46,7 +46,35 @@ RUN cd /tmp && \
     ln -s /usr/local/zeppelin-0.7.1-bin-netinst /usr/local/zeppelin && \
     /usr/local/zeppelin/bin/install-interpreter.sh --name md,angular,shell,jdbc,python,file
 
+# == Maven ==
+RUN cd /tmp && \
+    curl -L http://apache-mirror.rbc.ru/pub/apache/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.tar.gz \
+        > apache-maven-3.5.0-bin.tar.gz && \
+    tar xzf apache-maven-3.5.0-bin.tar.gz && \
+    mv ./apache-maven-3.5.0 /usr/local/ && \
+    rm apache-maven-3.5.0-bin.tar.gz && \
+    ln -s /usr/local/apache-maven-3.5.0 /usr/local/maven && \
+    ln -s /usr/local/maven/bin/mvn /usr/local/bin
+
+# == H2O ==
+RUN cd /tmp && \
+    curl -L http://h2o-release.s3.amazonaws.com/h2o/rel-ueno/4/h2o-3.10.4.4.zip \
+        > h2o-3.10.4.4.zip && \
+    unzip h2o-3.10.4.4.zip && \
+    mv ./h2o-3.10.4.4 /usr/local/ && \
+    rm h2o-3.10.4.4.zip && \
+    ln -s /usr/local/h2o-3.10.4.4 /usr/local/h2o
+
+# == SBT ==
+RUN cd /tmp && \
+    curl -L http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.1/sbt-launch.jar \
+        > sbt-launch.jar && \
+    mkdir -p /usr/local/sbt/ && \
+    mv sbt-launch.jar /usr/local/sbt/
+
 COPY entry-point.sh supervisor-all.conf /
+COPY sbt h2o /usr/local/bin/
+COPY zeppelin-env.sh /usr/local/zeppelin/conf/
 
 # Final setup: directories, permissions, ssh login, etc
 RUN mkdir -p /home/user && \
@@ -54,9 +82,12 @@ RUN mkdir -p /home/user && \
     echo 'root:12345' | chpasswd && \
     sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+    chmod a+x /usr/local/bin/h2o && \
+    chmod a+x /usr/local/bin/sbt && \
     chmod a+x /entry-point.sh
+
 WORKDIR /home/user
-EXPOSE 22 5000 8080
+EXPOSE 22 4040 5000 8080 54321
 
 ENTRYPOINT ["/entry-point.sh"]
 CMD ["shell"]
